@@ -31,11 +31,43 @@ while True:
         # connection.close()
     elif command[0] == "get":
         command = " ".join(str(element) for element in command)
+        # Send command and file name to server
         clientSocket.send(command.encode())
-        data = clientSocket.recv(10240).decode()
-        with open("temp",'w') as f:
-            f.write(data)
-        f.close()
+        # Receive filename confirmation and filesize from server.
+        data = clientSocket.recv(1024).decode("utf-8")
+        print("filename and filesize received from server: ", data)
+        item = data.split("_")
+        fileName = item[0]
+        filesize = int(item[1])
+        print("filesize to receive: ", filesize)
+        dataBuffer = bytearray()
+        with open("temp", "wb") as f:
+            while len(dataBuffer) < filesize:
+                data = clientSocket.recv(filesize)
+                if not data:
+                    break
+                dataBuffer += data
+                # print("file data received: ", data.decode())
+                # f.write(data.decode())
+                # break
+            dataBuffer = bytes(dataBuffer)
+            f.write(dataBuffer)
+            # dataBuffer = str(dataBuffer, 'utf-8')
+            # dataBuffer = dataBuffer.lstrip("b\'")
+            # dataBuffer = dataBuffer.rstrip("\n'")
+            # f.write(dataBuffer)
+            f.close()
+        # data_buffer = bytes()
+        # while True:
+        #     data = clientSocket.recv(1024)
+        #     data_buffer += data
+        #     if not data:
+        #         break
+        # # data = bytes(data_buffer)
+        # data = data.decode()
+        # with open("temp",'w') as f:
+        #     f.write(data)
+        # f.close()
     elif command[0] == "quit":
         command = " ".join(str(element) for element in command)
         clientSocket.send(command.encode())

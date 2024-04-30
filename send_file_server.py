@@ -4,6 +4,7 @@ import os
 from os.path import isfile
 import sys
 import socket
+from pathlib import Path
 
 serverPort = int(sys.argv[1])
 serverSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM) 
@@ -13,11 +14,11 @@ print('The server is ready to receive')
 connectionSocket, addr = serverSocket.accept()
 # Specify server directory for server files.
 BASE_DIR = os.path.dirname(os.path.realpath(__file__))
-server_files = "server_files".format(BASE_DIR)
+server_files = "serverFiles".format(BASE_DIR)
 
 while True:
     # connectionSocket, addr = serverSocket.accept()
-    command = connectionSocket.recv(65536).decode()
+    command = connectionSocket.recv(1024).decode()
     command = command.split()
     print("command received: ", command)
     if command[0] == "ls":
@@ -35,14 +36,33 @@ while True:
             # Todo: check if file exists and send it.
             fileName = os.path.join(server_files, command[1])
             print("fileName: ", fileName)
+            fileSize = os.path.getsize(fileName)
+            data = f"{fileName}_{fileSize}"
+            connectionSocket.send(data.encode("utf-8"))
             if os.path.isfile(fileName):
-                relpath = os.path.relpath(fileName, server_files)
-                with open(fileName, 'rb') as f:
-                    while True:
-                        data = f.read()
-                        connectionSocket.send(data)
-                        if not data:
-                            break
+                # relpath = os.path.relpath(fileName, server_files)
+                fileSize = os.path.getsize(fileName)
+                print("fileSize: ", fileSize)
+                p = Path(__file__).parent.resolve()
+                p = p / 'serverFiles' / command[1]
+                # p = Path(__file__).with_name('serverFiles' / command[1])
+                print("file path: ", p)
+                # other way
+                byte_fileData = bytearray(fileSize)
+                numSent = 0
+                with p.open('rb') as f:
+                    # while True:
+                    #     data = f.read(fileSize)
+                    #     if not data:
+                    #         break
+                    #     # print("data before sending:", data)
+                    #     connectionSocket.send(data)
+                    #     break
+                    # f.close()
+                    # other way
+                    data = f.read(fileSize)
+                    while len(byte_fileData) > numSent:
+                        numSent += connectionSocket.send(data[numSent:])
         else:
             print("Please just pass the name of 1 file at a time.")
             # f = open("wedidit", "w")
