@@ -21,13 +21,23 @@ clientSocket.connect((serverName, serverPort))
 
 while True:
     command = input("ftp> ")
-    if command == "ls":
+    command = command.split()
+    print("command[0]: ", command[0])
+    if command[0] == "ls":
+        command = " ".join(str(element) for element in command)
         clientSocket.send(command.encode())
         data = clientSocket.recv(1024).decode()
         print(data)
         # connection.close()
-    elif command == "quit":
+    elif command[0] == "get":
+        command = " ".join(str(element) for element in command)
+        clientSocket.send(command.encode())
+        data = clientSocket.recv(10240).decode()
+        with open("temp",'w') as f:
+            f.write(data)
+        f.close()
+    elif command[0] == "quit":
+        command = " ".join(str(element) for element in command)
         clientSocket.send(command.encode())
         clientSocket.close()
         break
-    # fileObj.close()
