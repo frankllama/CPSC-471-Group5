@@ -9,9 +9,10 @@ serverSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 serverSocket.bind(('0.0.0.0', serverPort))
 serverSocket.listen(1)
 print('The server is ready to receive')
+connectionSocket, addr = serverSocket.accept()
 
 while True:
-    connectionSocket, addr = serverSocket.accept()
+    # connectionSocket, addr = serverSocket.accept()
     command = connectionSocket.recv(65536).decode()
     if command == "ls":
         # os.system(command)
@@ -20,5 +21,6 @@ while True:
         connectionSocket.send(formated_file_list.encode())
     # f = open("wedidit", "w")
     # f.write(fileData)
-    connectionSocket.close()
-    break
+    elif command == "quit":
+        connectionSocket.close()
+        break

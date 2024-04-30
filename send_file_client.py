@@ -19,12 +19,15 @@ clientSocket.connect((serverName, serverPort))
 
 # clientSocket.send(fileData)
 
-command = input("ftp> ")
-if command == "ls":
-    clientSocket.send(command.encode())
-    data = clientSocket.recv(1024).decode()
-    print(data)
-    # connection.close()
-
-clientSocket.close()
-# fileObj.close()
+while True:
+    command = input("ftp> ")
+    if command == "ls":
+        clientSocket.send(command.encode())
+        data = clientSocket.recv(1024).decode()
+        print(data)
+        # connection.close()
+    elif command == "quit":
+        clientSocket.send(command.encode())
+        clientSocket.close()
+        break
+    # fileObj.close()
