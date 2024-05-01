@@ -67,6 +67,31 @@ while True:
             print("Please just pass the name of 1 file at a time.")
             # f = open("wedidit", "w")
             # f.write(fileData)
+    elif command[0] == "put":
+        # command = " ".join(str(element) for element in command)
+        # Send command and file name to client
+        # connectionSocket.send(command.encode())
+        # Receive filename confirmation and filesize from client.
+        # data = connectionSocket.recv(1024).decode("utf-8")
+        data = connectionSocket.recv(1024).decode()
+        print("filename and filesize received from client: ", data)
+        item = data.split("_")
+        fileName = item[0]
+        fileSize = int(item[1])
+        print("filesize to receive: ", fileSize)
+        p = Path(__file__).parent.resolve()
+        # p = p / 'serverFiles' / 'fileFromClient'
+        print("file path: ", p)
+        dataBuffer = bytearray()
+        with open("fileFromClient", "wb") as f:
+            while len(dataBuffer) < fileSize:
+                data = connectionSocket.recv(fileSize)
+                if not data:
+                    break
+                dataBuffer += data
+            dataBuffer = bytes(dataBuffer)
+            f.write(dataBuffer)
+            f.close()
     elif command[0] == "quit":
         connectionSocket.close()
         break
