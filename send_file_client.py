@@ -41,7 +41,7 @@ while True:
         filesize = int(item[1])
         print("filesize to receive: ", filesize)
         dataBuffer = bytearray()
-        with open("temp", "wb") as f:
+        with open("fileFromServer", "wb") as f:
             while len(dataBuffer) < filesize:
                 data = clientSocket.recv(filesize)
                 if not data:
