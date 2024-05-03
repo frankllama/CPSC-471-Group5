@@ -3,6 +3,7 @@ from os.path import isfile
 import sys
 import socket
 from pathlib import Path
+import time
 
 # Get the port to listen on
 serverPort = int(sys.argv[1])
@@ -27,6 +28,7 @@ while True:
         files = os.listdir()
         formated_file_list = '\n'.join(files)
         connectionSocket.send(formated_file_list.encode())
+        time.sleep(1)
     elif command[0] == "get":
         print("File Path to get file: ", server_files)
         print("command length: ", len(command))
@@ -45,6 +47,7 @@ while True:
                 print("file path: ", p)
                 byte_fileData = bytearray(fileSize)
                 numSent = 0
+                time.sleep(1)
                 with p.open('rb') as f:
                     data = f.read(fileSize)
                     while len(byte_fileData) > numSent:

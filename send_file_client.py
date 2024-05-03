@@ -21,6 +21,7 @@ while True:
         clientSocket.send(command.encode())
         data = clientSocket.recv(1024).decode()
         print(data)
+        time.sleep(1)
     elif command[0] == "get":
         # command = " ".join(str(element) for element in command)
         command = str(1*" ").join(command)
@@ -34,6 +35,7 @@ while True:
         filesize = int(item[1])
         print("filesize to receive: ", filesize)
         dataBuffer = bytearray()
+        time.sleep(1)
         with open("fileFromServer", "wb") as f:
             while len(dataBuffer) < filesize:
                 data = clientSocket.recv(filesize)
