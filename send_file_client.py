@@ -29,7 +29,7 @@ while True:
         # Receive filename confirmation and filesize from server.
         data = clientSocket.recv(1024).decode()
         print("filename and filesize received from server: ", data)
-        item = data.split("_")
+        item = data.split(";")
         fileName = item[0]
         filesize = int(item[1])
         print("filesize to receive: ", filesize)
@@ -58,7 +58,7 @@ while True:
         print("fileName: ", fileName)
         fileSize = os.path.getsize(fileName)
         print("fileSzie from os.path.getsize: ", fileSize)
-        data = f"{Path(fileName).name}_{fileSize}"
+        data = f"{Path(fileName).name};{fileSize}"
         print("data to send to server: ", data)
         clientSocket.send(data.encode("utf-8"))
         time.sleep(1)

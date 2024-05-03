@@ -35,7 +35,7 @@ while True:
             fileName = os.path.join(server_files, command[1])
             print("FileName found: ", fileName)
             fileSize = os.path.getsize(fileName)
-            data = f"{fileName}_{fileSize}"
+            data = f"{fileName};{fileSize}"
             connectionSocket.send(data.encode("utf-8"))
             if os.path.isfile(fileName):
                 fileSize = os.path.getsize(fileName)
@@ -58,7 +58,8 @@ while True:
         print("data in put received: ", data)
         data = data.decode()
         print("filename and filesize received from client: ", data)
-        item = data.split("_")
+        # item = data.split("_")
+        item = data.split(";")
         fileName = item[0]
         fileSize = int(item[1])
         print("filesize to receive: ", fileSize)
