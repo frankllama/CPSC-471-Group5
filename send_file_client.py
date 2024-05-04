@@ -1,52 +1,90 @@
-# Reference Chapter 2.7.2 pg. 159-164
-
 import os
 import sys
 import socket
+from pathlib import Path
+import time
 
+# Get server address and port from command line arguments
 serverName = sys.argv[1]
 serverPort = int(sys.argv[2])
 
-# The name of the file
-# fileName = sys.argv[1]
-# Open the file in byte mode
-# fileObj = open(fileName, "rb")
-
+# Create a TCP socket and connect to the server
 clientSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 clientSocket.connect((serverName, serverPort))
 
-# fileData = fileObj.read(65536)
-
-# clientSocket.send(fileData)
-
+# Specify server directory for server files
+BASE_DIR = os.path.dirname(os.path.realpath(__file__))
+client_files = "{}/clientFiles".format(BASE_DIR)
 
 while True:
     command = input("ftp> ")
-    clientSocket.send(command.encode())
-                    
-    if command == "ls":
+    command = command.split()
+    print("command[0]: ", command[0])
+
+    # List server files
+    if command[0] == "ls":
+        command = " ".join(command)
+        clientSocket.send(command.encode())
         data = clientSocket.recv(1024).decode()
         print(data)
-        # connection.close()
-    elif command.startswith("get"):
-        filename = command.split()[1]
-        with open(filename, 'wb') as file:
-            while True:
-                file_data = clientSocket.recv(1024)
-                if not file_data:
-                    break  # End of file transfer
-                file.write(file_data)
-        print(f"File '{filename}' downloaded successfully.")
-    elif command.startswith("put"):
-        filename = command.split()[1]
-        with open(filename, 'rb') as file:
-            file_data = file.read(1024)
-            while file_data:
-                clientSocket.send(file_data)
-                file_data = file.read(1024)
-        print(f"File '{filename}' uploaded successfully.")
-    elif command == "quit":
-            break
+        time.sleep(1)
 
-clientSocket.close()
-# fileObj.close()
+    # Receive file from server
+    elif command[0] == "get":
+        command = " ".join(command)
+        clientSocket.send(command.encode())
+        data = clientSocket.recv(1024).decode()
+        print("filename and filesize received from server: ", data)
+        item = data.split(";")
+        fileName = item[0]
+        filesize = int(item[1])
+        print("filesize to receive: ", filesize)
+        dataBuffer = bytearray()
+        time.sleep(1)
+        with open(os.path.join(client_files, fileName), "wb") as f:
+            while len(dataBuffer) < filesize:
+                data = clientSocket.recv(filesize)
+                if not data:
+                    break
+                dataBuffer += data
+            dataBuffer = bytes(dataBuffer)
+            f.write(dataBuffer)
+            f.close()
+        print("Successfully retrieved data sent from client.")
+
+    # Send file to server
+    elif command[0] == "put":
+        command = " ".join(command)
+        clientSocket.sendall(command.encode())
+        command = command.split()
+        p = Path(__file__).parent.resolve()
+        p = p / client_files / command[1]
+        fileName = p
+        print("fileName: ", fileName)
+        fileSize = os.path.getsize(fileName)
+        print("file size from os.path.getsize: ", fileSize)
+        data = f"{Path(fileName).name};{fileSize}"
+        print("data to send to server: ", data)
+        clientSocket.send(data.encode("utf-8"))
+        time.sleep(1)
+        print("fileSize: ", fileSize)
+        print("file path: ", p)
+        byte_fileData = bytearray(fileSize)
+        numSent = 0
+        with p.open('rb') as f:
+            data = f.read(fileSize)
+            while len(byte_fileData) > numSent:
+                numSent += clientSocket.send(data[numSent:])
+            f.close()
+        print("Finished sending data to server.")
+
+    # Close connection
+    elif command[0] == "quit":
+        command = " ".join(command)
+        clientSocket.send(command.encode())
+        clientSocket.close()
+        print("Successfully closed client socket and sent server request to close connection.")
+        break
+
+    else:
+        pass
